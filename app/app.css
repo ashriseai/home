@@ -13,3 +13,8 @@ body {
     color-scheme: dark;
   }
 }
+
+.console-surface {
+  @apply bg-neutral-950/80 border border-white/10 backdrop-blur;
+  box-shadow: 0 0 40px rgba(0, 255, 170, 0.08);
+}

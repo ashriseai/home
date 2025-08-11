@@ -10,10 +10,7 @@ import HeroesListPanel from "~/components/features/HeroesListPanel";
 import ChatPanel from "~/components/features/ChatPanel";
 import FantasyConsoleSplash from "~/components/features/FantasyConsoleSplash";
 
-/***********************************
- * Intro (Page component)
- ***********************************/
-export function Intro() {
+export function Terminal({ embedded = false }: { embedded?: boolean }) {
   // Console logs state
   const [lines, setLines] = useState<string[]>([]);
   const { ref: termRef, scroll: scrollTerm } = useAutoScroll<HTMLDivElement>();
@@ -168,77 +165,83 @@ export function Intro() {
   }, [print]);
 
   /************** Render **************/
+  const Panel = (
+    <>
+      <div className="mx-auto overflow-hidden rounded-xl border border-white/10 bg-neutral-950/80 shadow-[0_0_40px_rgba(0,255,170,0.08)] backdrop-blur">
+        <TitleBar />
+
+        <div className="grid grid-cols-1 gap-0 md:grid-cols-[1.1fr_0.9fr]">
+          {/* Left: console + actions */}
+          <div className="p-4 md:p-6">
+            <TerminalLogs ref={termRef} lines={lines} />
+
+            <ActionsBar
+              onDonate={onOpenDonate}
+              onCreate={onOpenCreate}
+              onList={onOpenList}
+              onAbout={onAbout}
+              onHelp={onHelp}
+            />
+          </div>
+
+          {/* Right: mode panel */}
+          <div className="border-t md:border-t-0 md:border-l border-white/10 p-4 md:p-6">
+            {mode === Mode.Donate && (
+              <DonatePanel
+                contributors={contributors}
+                goal={goal}
+                raised={raised}
+                pct={pct}
+                donateSum={donateSum}
+                setDonateSum={setDonateSum}
+                onDonate={onDonate}
+              />
+            )}
+
+            {mode === Mode.Create && (
+              <CreateHeroPanel form={form} setForm={setForm} onCreate={onCreateHero} />
+            )}
+
+            {mode === Mode.List && (
+              <HeroesListPanel heroes={heroes} onSelect={onSelectHero} />
+            )}
+
+            {mode === Mode.Chat && activeHero && (
+              <ChatPanel
+                hero={activeHero}
+                messages={threads[activeHero.id] || []}
+                onBack={onOpenList}
+                onSend={onSendToHero}
+                chatRef={chatRef}
+              />
+            )}
+
+            {mode === Mode.Console && <FantasyConsoleSplash />}
+          </div>
+        </div>
+      </div>
+
+      <FooterMiniHelp />
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="w-full">{Panel}</div>
+    );
+  }
+
   return (
     <section className="relative isolate min-h-screen grid place-items-center overflow-hidden bg-black text-gray-100">
       {/* scanline layer */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.07] bg-[linear-gradient(rgba(255,255,255,0.2)_1px,transparent_1px)] bg-[length:100%_3px]" />
 
       <div className="relative z-10 mx-auto w-full max-w-5xl px-6">
-        <div className="mx-auto overflow-hidden rounded-xl border border-white/10 bg-neutral-950/80 shadow-[0_0_40px_rgba(0,255,170,0.08)] backdrop-blur">
-          <TitleBar />
-
-          <div className="grid grid-cols-1 gap-0 md:grid-cols-[1.1fr_0.9fr]">
-            {/* Left: console + actions */}
-            <div className="p-4 md:p-6">
-              <TerminalLogs ref={termRef} lines={lines} />
-
-              <ActionsBar
-                onDonate={onOpenDonate}
-                onCreate={onOpenCreate}
-                onList={onOpenList}
-                onAbout={onAbout}
-                onHelp={onHelp}
-              />
-            </div>
-
-            {/* Right: mode panel */}
-            <div className="border-t md:border-t-0 md:border-l border-white/10 p-4 md:p-6">
-              {mode === Mode.Donate && (
-                <DonatePanel
-                  contributors={contributors}
-                  goal={goal}
-                  raised={raised}
-                  pct={pct}
-                  donateSum={donateSum}
-                  setDonateSum={setDonateSum}
-                  onDonate={onDonate}
-                />
-              )}
-
-              {mode === Mode.Create && (
-                <CreateHeroPanel form={form} setForm={setForm} onCreate={onCreateHero} />
-              )}
-
-              {mode === Mode.List && (
-                <HeroesListPanel heroes={heroes} onSelect={onSelectHero} />
-              )}
-
-              {mode === Mode.Chat && activeHero && (
-                <ChatPanel
-                  hero={activeHero}
-                  messages={threads[activeHero.id] || []}
-                  onBack={onOpenList}
-                  onSend={onSendToHero}
-                  chatRef={chatRef}
-                />
-              )}
-
-              {mode === Mode.Console && <FantasyConsoleSplash />}
-            </div>
-          </div>
-        </div>
-
-        <FooterMiniHelp />
+        {Panel}
       </div>
     </section>
   );
 }
-
-
-
-
-
-
 
 const FooterMiniHelp = memo(function FooterMiniHelp() {
   return (
